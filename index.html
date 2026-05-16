@@ -219,25 +219,68 @@ table th{
 
 @media(max-width:600px){
 
-  body{
-    padding:10px;
-  }
+body{
+padding:10px;
+}
 
-  .buttons{
-    flex-direction:column;
-  }
+.header h1{
+font-size:22px;
+text-align:center;
+}
 
-  .buttons button{
-    width:100%;
-  }
+.cards{
+grid-template-columns:1fr;
+}
 
-  .modal-content{
-    width:95%;
-  }
+.card p{
+font-size:22px;
+}
 
-  table{
-    font-size:13px;
-  }
+.buttons{
+flex-direction:column;
+}
+
+.buttons button{
+width:100%;
+font-size:15px;
+padding:14px;
+}
+
+.modal-content{
+width:95%;
+padding:18px;
+max-height:90vh;
+overflow-y:auto;
+}
+
+.form-group input,
+.form-group select{
+font-size:16px;
+}
+
+.total-box{
+font-size:18px;
+text-align:center;
+}
+
+table{
+font-size:12px;
+min-width:650px;
+}
+
+.action-buttons{
+flex-direction:column;
+}
+
+.print-btn,
+.delete-btn{
+width:100%;
+}
+
+.search-box{
+font-size:16px;
+}
+
 }
 
 @media print{
@@ -547,14 +590,14 @@ document.getElementById("quantity");
 const priceInput =
 document.getElementById("price");
 
-const paperSize =
-document.getElementById("paperSize");
-
 const printType =
 document.getElementById("printType");
 
 const printOptions =
 document.getElementById("printOptions");
+
+const cashReceived =
+document.getElementById("cashReceived");
 
 let transactions =
 JSON.parse(localStorage.getItem("transactions")) || [];
@@ -590,6 +633,8 @@ else if(service === "Laminate"){
 priceInput.value = 25;
 }
 
+quantityInput.value = 1;
+
 computeTotal();
 
 modal.style.display = "flex";
@@ -605,9 +650,9 @@ document.getElementById("modalTitle")
 
 printOptions.style.display = "block";
 
-updatePrintPrice();
+quantityInput.value = 1;
 
-computeTotal();
+updatePrintPrice();
 
 modal.style.display = "flex";
 }
@@ -630,9 +675,12 @@ function closeModal(){
 modal.style.display = "none";
 
 document.getElementById("customerName").value = "";
-document.getElementById("quantity").value = "";
-document.getElementById("price").value = "";
-document.getElementById("cashReceived").value = "";
+
+quantityInput.value = "";
+
+priceInput.value = "";
+
+cashReceived.value = "";
 
 document.getElementById("totalAmount")
 .innerText = "0";
@@ -644,15 +692,16 @@ document.getElementById("changeAmount")
 function computeTotal(){
 
 const qty =
-Number(quantityInput.value);
+Number(quantityInput.value) || 0;
 
 const price =
-Number(priceInput.value);
+Number(priceInput.value) || 0;
 
 const total = qty * price;
 
 document.getElementById("totalAmount")
-.innerText = total;
+.innerText =
+total.toFixed(2);
 
 computeChange();
 }
@@ -663,19 +712,18 @@ const total =
 Number(
 document.getElementById("totalAmount")
 .innerText
-);
+) || 0;
 
 const cash =
-Number(
-document.getElementById("cashReceived")
-.value
-);
+Number(cashReceived.value) || 0;
 
 const change = cash - total;
 
 document.getElementById("changeAmount")
 .innerText =
-change >= 0 ? change : 0;
+change >= 0
+? change.toFixed(2)
+: "0.00";
 }
 
 quantityInput.addEventListener(
@@ -683,18 +731,12 @@ quantityInput.addEventListener(
 computeTotal
 );
 
-paperSize.addEventListener(
-"change",
-updatePrintPrice
-);
-
 printType.addEventListener(
 "change",
 updatePrintPrice
 );
 
-document.getElementById("cashReceived")
-.addEventListener(
+cashReceived.addEventListener(
 "input",
 computeChange
 );
@@ -714,10 +756,7 @@ Number(priceInput.value);
 const total = qty * price;
 
 const cash =
-Number(
-document.getElementById("cashReceived")
-.value
-);
+Number(cashReceived.value);
 
 if(qty <= 0 || price <= 0){
 
@@ -741,13 +780,11 @@ customer:customer,
 
 quantity:qty,
 
-total:total,
+total:total.toFixed(2),
 
-cash:cash,
+cash:cash.toFixed(2),
 
-change:cash-total,
-
-
+change:(cash-total).toFixed(2),
 
 printType:
 selectedService === "Print"
@@ -799,7 +836,6 @@ if(transaction.service === "Print"){
 document.getElementById(
 "receiptPrintDetails"
 ).style.display = "block";
-
 
 document.getElementById(
 "receiptType"
@@ -866,7 +902,7 @@ new Date(transaction.date)
 .toLocaleDateString();
 
 if(today === transDate){
-dailyIncome += transaction.total;
+dailyIncome += Number(transaction.total);
 }
 
 const row = `
@@ -912,7 +948,8 @@ table.innerHTML += row;
 });
 
 document.getElementById("dailyIncome")
-.innerText = "₱" + dailyIncome;
+.innerText =
+"₱" + dailyIncome.toFixed(2);
 
 document.getElementById("totalTransactions")
 .innerText = transactions.length;
